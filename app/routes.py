@@ -1,6 +1,6 @@
 import os
 from os import urandom
-from PIL import Image 
+from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
 from app import app, db, bcrypt, mail
 from app.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
@@ -153,10 +153,12 @@ def send_reset_email(user):
     msg = Message('Password Reset Request',
                   sender='noreply@demo.com',
                   recipients=[user.email])
-   
-{url_for('reset_token', token=token, _external=True)} 
+    msg.body = 'To reset your password, visit the following link:'
+{url_for('reset_token', token=token,  _external=True)}
+'If you did not make this request then simply ignore this email and no changes will be made.'
 
 mail.send(msg)
+
 
 @app.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
@@ -187,7 +189,4 @@ def reset_token(token):
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('login'))
     return render_template('reset_token.html', title='Reset Password', form=form)
-
-
-
 
