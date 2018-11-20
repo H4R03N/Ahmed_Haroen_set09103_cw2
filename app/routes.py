@@ -9,7 +9,31 @@ from app.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 
-@app.route("/")
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Password Reset Request',
+                  sender='haroenahmed1996@gmail.com',
+                  recipients=[user.email])
+    msg.body = 'To reset your password, visit the following link:'
+    {url_for('reset_token', token=token,  _external=True)}
+    mail.send(msg)
+
+
+def save_picture(form_picture):
+    random_hex  = urandom.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex  + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
+
+
 @app.route("/home")
 def home():
     page = request.args.get('page', 1, type=int)
@@ -58,16 +82,6 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-def save_picture(form_picture):
-    random_hex = urandom(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
-
-
-
-    return picture_fn
-
 
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
@@ -88,6 +102,7 @@ def account():
     image_file = url_for('static', filename='img/profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form=form)
 
+
 @app.route("/post/new", methods=['GET', 'POST'])
 @login_required
 def new_post():
@@ -99,6 +114,7 @@ def new_post():
         flash('Your post has been created!', 'success')
         return redirect(url_for('home'))
     return render_template('create_post.html', title='New Post', form=form, legend='New Post')
+
 
 @app.route("/post/<int:post_id>")
 def post(post_id):
@@ -146,18 +162,6 @@ def user_posts(username):
         .order_by(Post.date_posted.desc())\
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
-
-
-def send_reset_email(user):
-    token = user.get_reset_token()
-    msg = Message('Password Reset Request',
-                  sender='noreply@demo.com',
-                  recipients=[user.email])
-    msg.body = 'To reset your password, visit the following link:'
-{url_for('reset_token', token=token,  _external=True)}
-'If you did not make this request then simply ignore this email and no changes will be made.'
-
-mail.send(msg)
 
 
 @app.route("/reset_password", methods=['GET', 'POST'])
