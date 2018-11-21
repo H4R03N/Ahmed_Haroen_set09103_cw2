@@ -2,7 +2,7 @@ from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from app import db, login_manager, app
 from flask_login import UserMixin
-
+from hashlib import md5
 
 
 @login_manager.user_loader
@@ -17,6 +17,11 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
+
+    def avatar(self, size):
+   	digest= md5(self.email.lower().encode('utf-8')).hexdigest()
+	return 'https:www.gravatar.com/avatar/{}>d=indeticon&s={}'.format(digest, size)
+
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)

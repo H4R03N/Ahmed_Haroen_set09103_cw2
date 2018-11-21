@@ -3,8 +3,7 @@ from os import urandom
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
 from app import app, db, bcrypt, mail
-from app.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
-                             PostForm, RequestResetForm, ResetPasswordForm)
+from app.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
 from app.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
@@ -21,10 +20,10 @@ def send_reset_email(user):
 
 
 def save_picture(form_picture):
-    random_hex  = urandom.token_hex(8)
+    random_hex  = urandom(8).hexdigest()
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex  + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    picture_path = os.path.join(app.root_path, 'static/profile_pics/', picture_fn)
 
     output_size = (125, 125)
     i = Image.open(form_picture)
@@ -33,17 +32,13 @@ def save_picture(form_picture):
 
     return picture_fn
 
-
+@app.route("/")
 @app.route("/home")
 def home():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    return render_template('home.html', posts=posts)
+    return render_template('home.html', title='Hneets', posts=posts, active='home')
 
-
-@app.route("/about")
-def about():
-    return render_template('about.html', title='About')
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -58,7 +53,7 @@ def register():
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
         return redirect(url_for('login'))
-    return render_template('register.html', title='Register', form=form)
+    return render_template('register.html', title='Register', form=form, active='register')
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -74,7 +69,7 @@ def login():
             return redirect(next_page) if next_page else redirect(url_for('home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
-    return render_template('login.html', title='Login', form=form)
+    return render_template('login.html', title='Login', form=form, active='login')
 
 
 @app.route("/logout")
@@ -89,8 +84,8 @@ def account():
     form = UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
-            picture_file = save_picture(form.picture.data)
-            current_user.image_file = picture_file
+            picture_file = save_picture(form.picture.data)	
+       	    current_user.image_file = picture_file
         current_user.username = form.username.data
         current_user.email = form.email.data
         db.session.commit()
@@ -100,7 +95,7 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     image_file = url_for('static', filename='img/profile_pics/' + current_user.image_file)
-    return render_template('account.html', title='Account', image_file=image_file, form=form)
+    return render_template('account.html', title='Account', image_file=image_file, form=form, active='account')
 
 
 @app.route("/post/new", methods=['GET', 'POST'])
@@ -193,4 +188,16 @@ def reset_token(token):
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('login'))
     return render_template('reset_token.html', title='Reset Password', form=form)
+
+@app.errorhandler(404)
+def not_found_error(error):
+	return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+	return render_template('500.html'), 500
+
+@app.errorhandler(403)
+def error_403(error):
+	return render_template('errors/403.html'), 403
 
