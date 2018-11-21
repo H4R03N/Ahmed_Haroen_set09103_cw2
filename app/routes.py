@@ -20,7 +20,7 @@ def send_reset_email(user):
 
 
 def save_picture(form_picture):
-    random_hex  = urandom(8).hexdigest()
+    random_hex  = urandom(8).digest(hex)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex  + f_ext
     picture_path = os.path.join(app.root_path, 'static/profile_pics/', picture_fn)
@@ -37,7 +37,7 @@ def save_picture(form_picture):
 def home():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    return render_template('home.html', title='Hneets', posts=posts, active='home')
+    return render_template('home.html', title='Feed', posts=posts, active='home')
 
 
 

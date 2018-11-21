@@ -1,5 +1,5 @@
 body {
-  background: #fafafa;
+  background: #ccccff;
   color: #333333;
   margin-top: 5rem;
 }
@@ -79,3 +79,7 @@ a.article-title:hover {
   font-size: 2.5rem;
 }
 
+.btn-info{
+ background-color:#007bff;
+ border-color:#007bff;
+}
