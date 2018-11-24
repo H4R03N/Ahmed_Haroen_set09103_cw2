@@ -8,11 +8,10 @@ from app.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 
-
 def send_reset_email(user):
     token = user.get_reset_token()
     msg = Message('Password Reset Request',
-                  sender='haroenahmed1996@gmail.com',
+                  sender='donotreply@harneet.ac.uk',
                   recipients=[user.email])
     msg.body = 'To reset your password, visit the following link:'
     {url_for('reset_token', token=token,  _external=True)}
@@ -20,10 +19,10 @@ def send_reset_email(user):
 
 
 def save_picture(form_picture):
-    random_hex  = urandom(8).digest(hex)
+    random_hex  = urandom(8)
     _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex  + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pics/', picture_fn)
+    picture_fn ='img1_.jpg' 
+    picture_path = os.path.join(app.root_path, 'static/img/profile_pics/', picture_fn)
 
     output_size = (125, 125)
     i = Image.open(form_picture)
@@ -31,6 +30,7 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
 
 @app.route("/")
 @app.route("/home")
